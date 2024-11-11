@@ -2,26 +2,27 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const { body } = require('express-validator');
-
+const User  = require('../models/User');
 router.post('/register', [
     body('email').isEmail(),
     body('password').isLength({ min: 6 }),
     body('name').notEmpty(),
-    body('role').isIn(['patient', 'doctor', 'admin'])
+    // body('role').isIn(['patient', 'doctor', 'admin'])
 ], async (req, res) => {
     try {
-        const { email, password, name, role } = req.body;
+        const { email, password, name } = req.body;
         const userExists = await User.findOne({ email });
+        
         
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        const user = new User({ email, password, name, role });
+        const user = new User({ email, password, name, });
         await user.save();
 
         const token = user.generateAuthToken();
-        res.status(201).json({ token, user: { id: user._id, name, email, role } });
+        res.status(201).json({ token, user: { id: user._id, name, email, } });
     } catch (error) {
         res.status(500).json({ message: 'Error in registration', error: error.message });
     }
@@ -37,7 +38,7 @@ router.post('/login', async (req, res) => {
         }
 
         const token = user.generateAuthToken();
-        res.json({ token, user: { id: user._id, name: user.name, email, role: user.role } });
+        res.json({ token, user: { id: user._id, name: user.name, email,  } });
     } catch (error) {
         res.status(500).json({ message: 'Error in login', error: error.message });
     }
